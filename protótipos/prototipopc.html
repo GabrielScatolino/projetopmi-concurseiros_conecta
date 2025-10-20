@@ -1,0 +1,1324 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Concurseiro Conecta — Protótipo</title>
+  <style>
+    /* ---------- RESET & BASE ---------- */
+    :root{
+      --bg:#f7f8fb;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --primary:#1461f2;
+      --accent:#06b6d4;
+      --danger:#ef4444;
+      --glass: rgba(255,255,255,0.7);
+      --radius:12px;
+      --shadow: 0 6px 18px rgba(19,24,27,0.06);
+      --max-width:1100px;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    html,body,#app{height:100%}
+    body{
+      margin:0;
+      background:linear-gradient(180deg,#f7f8fb 0%, #eef2f7 100%);
+      color:#0f172a;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.35;
+      padding:24px;
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+      font-size:15px;
+    }
+    .container{
+      width:100%;
+      max-width:var(--max-width);
+      min-height:600px;
+      background:transparent;
+    }
+
+    /* ---------- LAYOUT ---------- */
+    .app-shell{
+      display:grid;
+      grid-template-columns: 260px 1fr;
+      gap:20px;
+      align-items:start;
+    }
+    /* sidebar for desktop */
+    .sidebar{
+      background:var(--card);
+      border-radius:var(--radius);
+      padding:18px;
+      box-shadow:var(--shadow);
+      height:calc(100vh - 48px); /* Ajustado para 100vh - 2*padding */
+      position:sticky;
+      top:24px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .logo{font-weight:700; font-size:18px; color:var(--primary)}
+    .nav-link{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px;
+      border-radius:10px;
+      cursor:pointer;
+      color:var(--muted);
+      text-decoration:none;
+    }
+    .nav-link.active{background:#eef6ff;color:var(--primary);font-weight:600}
+    .sidebar .bottom{
+      margin-top:auto;
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    /* content area */
+    .content{
+      min-height:600px;
+    }
+    .card{
+      background:var(--card);
+      border-radius:var(--radius);
+      padding:16px;
+      box-shadow:var(--shadow);
+    }
+    .header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    .page-title{font-size:18px; font-weight:700}
+    .small{font-size:13px;color:var(--muted)}
+    .muted{color:var(--muted)}
+
+    /* ---------- COMPONENTS ---------- */
+    .grid-2{display:grid;grid-template-columns:1fr 320px;gap:16px}
+    .cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .cards-grid .card{padding:12px}
+    .list{display:flex;flex-direction:column;gap:10px}
+    .profile-pill{
+      display:flex;align-items:center;gap:10px;
+      background:#f3f6ff;padding:8px;border-radius:10px;
+    }
+    .avatar{
+      width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#c7e7ff,#dfeeff);
+      display:flex;align-items:center;justify-content:center;font-weight:700;color:#034;
+    }
+
+    /* buttons */
+    .btn{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:10px 12px;border-radius:10px;border:0;cursor:pointer;
+      background:var(--primary);color:white;font-weight:600;
+    }
+    .btn.ghost{background:transparent;color:var(--primary);border:1px solid rgba(20,97,242,0.12)}
+    .btn.small{padding:6px 8px;font-size:14px;border-radius:8px}
+
+    /* forms */
+    .form-row{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+    input[type="text"], input[type="email"], input[type="password"], input[type="datetime-local"], select, textarea{
+      padding:10px;border-radius:10px;border:1px solid #e6eef8;background:transparent;
+    }
+    textarea{min-height:90px;resize:vertical;padding:10px}
+    .checkbox-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+
+    /* bottom nav for mobile */
+    .bottom-nav{
+      display:none;
+      position:fixed;left:50%;transform:translateX(-50%);
+      bottom:18px;background:var(--card);padding:8px;border-radius:20px;box-shadow:var(--shadow);
+      gap:8px;width:min(520px,94%);justify-content:space-between;
+      z-index: 1000;
+    }
+    .bottom-nav .nav-item{padding:10px;border-radius:12px;color:var(--muted);cursor:pointer}
+    .bottom-nav .nav-item.active{background:#eef6ff;color:var(--primary);font-weight:600}
+
+    /* map placeholder */
+    .map{
+      background:linear-gradient(180deg,#eef7ff,#fbfeff);
+      border-radius:10px;height:220px;display:flex;align-items:center;justify-content:center;color:var(--muted);
+      border:1px dashed rgba(4,19,30,0.04);
+    }
+
+    /* wizard */
+    .wizard-steps{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+    .step{padding:8px 10px;border-radius:999px;background:#f3f4f6;color:var(--muted);font-weight:600;font-size:14px}
+    .step.current{background:var(--primary);color:white}
+    .wizard-content{min-height:300px}
+
+    /* trip timeline */
+    .timeline{display:flex;flex-direction:column;gap:8px}
+    .timeline .item{display:flex;gap:12px;align-items:flex-start}
+    .timeline .dot{width:10px;height:10px;border-radius:50%;background:var(--primary);margin-top:8px}
+    .timeline .dot.faint{background:#e6eef8}
+
+    /* chat */
+    .chat-shell{display:flex;flex-direction:column;height:480px;border-radius:12px;overflow:hidden}
+    .chat-list{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+    .msg{max-width:78%;padding:10px;border-radius:10px}
+    .msg.me{align-self:flex-end;background:linear-gradient(90deg,var(--primary),#0b49d6);color:white}
+    .msg.their{align-self:flex-start;background:#f1f5f9;color:#475569}
+    .chat-input{display:flex;gap:8px;padding:10px;border-top:1px solid #eef2f7;background:white}
+
+    /* onboarding style */
+    .onboarding-slide{text-align:center;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:400px}
+    .onboarding-slide h2{color:var(--primary);margin-bottom:10px}
+
+    /* small screens */
+    @media (max-width:900px){
+      body{padding:12px}
+      .app-shell{grid-template-columns:1fr;gap:12px}
+      .sidebar{display:none}
+      .bottom-nav{display:flex}
+      .grid-2{display:block}
+      .cards-grid{grid-template-columns:repeat(2,1fr)}
+      .cards-grid .card{padding:10px}
+      .wizard-content{min-height:420px}
+      .onboarding-slide{min-height:60vh;padding:12px}
+      .onboarding-slide h2{font-size:24px}
+      .onboarding-slide p{font-size:15px}
+    }
+    @media (max-width:480px){
+      .cards-grid{grid-template-columns:1fr}
+      .container{padding:0}
+      .map{height:160px}
+      .chat-shell{height:62vh}
+    }
+    /* accessibility focus */
+    .nav-link:focus, .btn:focus, input:focus, select:focus, textarea:focus {outline:3px solid rgba(20,97,242,0.12); outline-offset:2px}
+  </style>
+</head>
+<body>
+  <div class="container" id="app">
+    <div id="mainApp" class="app-shell" aria-live="polite">
+      <aside class="sidebar" aria-label="Navegação principal">
+        <div class="logo">Concurseiro Conecta</div>
+        <nav>
+          <div class="nav-link active" data-route="dashboard">🏠 Home</div>
+          <div class="nav-link" data-route="trips-list">✈️ Viagens</div>
+          <div class="nav-link" data-route="map">🗺️ Mapa</div>
+          <div class="nav-link" data-route="connections">🤝 Conexões</div>
+          <div class="nav-link" data-route="community">💬 Comunidade</div>
+          <div class="nav-link" data-route="reviews">⭐ Avaliações</div>
+          <div class="nav-link" data-route="history">📚 Histórico</div>
+          <div class="nav-link" data-route="profile">⚙️ Perfil</div>
+        </nav>
+        <div class="bottom small muted">Protótipo responsive — arquivos locais</div>
+      </aside>
+
+      <main class="content" id="contentArea">
+        </main>
+    </div>
+
+    <div class="bottom-nav" role="navigation" aria-label="Navegação inferior">
+      <div class="nav-item active" data-route="dashboard">Home</div>
+      <div class="nav-item" data-route="trips-list">Viagens</div>
+      <div class="nav-item" data-route="connections">Conexões</div>
+      <div class="nav-item" data-route="reviews">Avaliações</div>
+      <div class="nav-item" data-route="profile">Perfil</div>
+    </div>
+  </div>
+
+  <script>
+    /***********************
+     * MOCK DATA (local)
+     ***********************/
+    const MOCK_DATA = {
+      currentUser: null, // Start as null to show onboarding/login
+      contests: [
+        {id:"c1", name:"Tribunal Regional - MG", date:"2020-11-09", city:"Belo Horizonte", venue:"Centro de Convenções BH", result: "Aprovado"},
+        {id:"c2", name:"Polícia Federal", date:"2025-10-15", city:"Brasília", venue:"IFB Campus Central", result: "Em planejamento"},
+        {id:"c3", name:"Receita Federal", date:"2025-12-03", city:"São Paulo", venue:"Universidade X", result: "Em planejamento"}
+      ],
+      trips: [
+        {
+          id:"t0",
+          contestId:"c1",
+          userId:"u1",
+          from:"Belo Horizonte",
+          to:"Belo Horizonte",
+          depart:"2020-11-08T10:00",
+          arrive:"2020-11-09T08:00",
+          hotel:"Hotel da Cidade",
+          notes:"Prova tranquila. Local bem sinalizado. Consegui dormir bem.",
+          peopleGoing: [],
+          prefs: { transport: false, company: 'private', privacy: 'private' } // Adicionando prefs padrão para consistência
+        },
+        {
+          id:"t1",
+          contestId:"c2",
+          userId:"u1",
+          from:"Belo Horizonte",
+          to:"Brasília",
+          depart:"2025-10-14T10:00",
+          arrive:"2025-10-14T12:10",
+          hotel:"Hotel Central Brasília",
+          notes:"Chegar cedo para revisar local",
+          peopleGoing: ["u2","u3"],
+          prefs: {
+            transport: true, // aceita carona
+            company: 'open', // busca companhia
+            privacy: 'public' // aparece na busca
+          }
+        }
+      ],
+      users: [
+        {id:"u1", name:"Mariana", city:"Belo Horizonte", avatarText:"M", email:"mariana@email.com", prefs: {hotel:true, carona:true, privacy:'public'}},
+        {id:"u2", name:"João", city:"Uberlândia", avatarText:"J", isFormalConnection: true},
+        {id:"u3", name:"Ana", city:"Belo Horizonte", avatarText:"A", isFormalConnection: true},
+        {id:"u4", name:"Carlos", city:"São Paulo", avatarText:"C", isFormalConnection: false},
+      ],
+      chats: {
+        // chatId: [messages]
+        "u1_u2": [
+          {from:"u2", text:"Oi! Vamos combinar carona?", at:"2025-09-20T10:15"},
+          {from:"u1", text:"Olá! Sim, podemos combinar.", at:"2025-09-20T10:21"}
+        ],
+        "u1_u3": [
+          {from:"u3", text:"Encontrei um hotel bom perto do local. Quer dividir?", at:"2025-09-21T18:00"},
+        ]
+      }
+    };
+
+    /***********************
+     * Simple Router & App State
+     ***********************/
+    const state = {
+      route: 'onboarding',
+      user: MOCK_DATA.currentUser,
+      trips: MOCK_DATA.trips,
+      chats: MOCK_DATA.chats,
+      onboardingStep: 1 // For the onboarding view
+    };
+
+    const contentArea = document.getElementById('contentArea');
+
+    function fmtDate(dtStr){
+      const d = new Date(dtStr);
+      if (isNaN(d.getTime())) return dtStr;
+      return d.toLocaleDateString('pt-BR', {day: '2-digit', month: 'short', year: 'numeric'});
+    }
+    function fmtDateTime(dtStr){
+      const d = new Date(dtStr);
+      if (isNaN(d.getTime())) return dtStr;
+      return d.toLocaleDateString('pt-BR', {day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'});
+    }
+
+    function setActiveNav(route){
+      // 'trips-list' and 'register-trip' should highlight the same 'trips-list' link
+      const mainRoute = route.startsWith('register-trip') ? 'trips-list' : route.split('-')[0];
+      
+      document.querySelectorAll('[data-route]').forEach(el=>{
+        const elRoute = el.dataset.route.split('-')[0];
+        if(elRoute === mainRoute){
+          el.classList.add('active');
+        } else el.classList.remove('active');
+      });
+    }
+
+    function navigate(route, opts = {}){
+      state.route = route;
+      setActiveNav(route);
+      pushHash(opts);
+      render();
+    }
+
+    document.querySelectorAll('[data-route]').forEach(el=>{
+      el.addEventListener('click', (e)=> {
+        // Prevent navigation if already on the same route group (e.g. to avoid re-render)
+        if(e.currentTarget.dataset.route === state.route) return;
+        navigate(e.currentTarget.dataset.route);
+      });
+    });
+
+    // Helper: read options passed via location hash (tiny routing)
+    function optsFromHash(){
+      const h = location.hash.slice(1);
+      try{
+        return h ? JSON.parse(decodeURIComponent(h)) : {};
+      }catch(e){return {}}
+    }
+    function pushHash(opts){
+      location.hash = encodeURIComponent(JSON.stringify(opts || {}));
+    }
+
+    /***********************
+     * RENDER FUNCTIONS
+     ***********************/
+    function render(){
+      if(!state.user){
+        if(state.route === 'onboarding') return renderOnboarding();
+        if(state.route === 'register') return renderRegister();
+        return renderLogin();
+      }
+      
+      switch(state.route){
+        case 'dashboard': return renderDashboard();
+        case 'trips-list': return renderTripsList(); // Nova rota
+        case 'register-trip': return renderRegisterTrip();
+        case 'trip': return renderTripDetails(optsFromHash());
+        case 'map': return renderMap();
+        case 'connections': return renderConnections();
+        case 'community': return renderCommunity();
+        case 'profile': return renderProfile();
+        case 'history': return renderHistory();
+        case 'reviews': return renderReviews();
+        case 'chat': return renderChat();
+        default: return renderDashboard();
+      }
+    }
+
+    /* ---------- ONBOARDING ---------- */
+    function renderOnboarding(){
+      const steps = [
+        {title:"Bem-vindo ao Concurseiro Conecta", text:"Seu assistente completo para organizar viagens de concurso e conectar-se com outros concurseiros."},
+        {title:"Planejamento Inteligente", text:"Cadastre sua prova, e nós sugerimos voos, hotéis e o melhor itinerário até o local de prova."},
+        {title:"Conecte-se e Economize", text:"Encontre outros candidatos com o mesmo destino. Combine caronas, divida hospedagem e compartilhe dicas valiosas."}
+      ];
+      const current = steps[state.onboardingStep - 1];
+
+      contentArea.innerHTML = `
+        <div class="card" style="max-width:640px;margin:auto">
+          <div class="onboarding-slide">
+            <h2 style="font-size:32px">${current.title}</h2>
+            <p class="muted" style="font-size:16px;line-height:1.5;max-width:400px">${current.text}</p>
+            
+            <div style="margin-top:20px;display:flex;gap:4px">
+              ${steps.map((s, i) => `<div style="width:10px;height:10px;border-radius:50%;background:${i === state.onboardingStep - 1 ? 'var(--primary)' : '#eef2f7'}"></div>`).join('')}
+            </div>
+
+            <div style="margin-top:30px;display:flex;gap:12px">
+              ${state.onboardingStep > 1 ? `<button class="btn ghost" id="btnBack">Voltar</button>` : ''}
+              <button class="btn" id="btnNext">${state.onboardingStep === steps.length ? 'Começar' : 'Avançar'}</button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('btnNext').addEventListener('click', ()=>{
+        if(state.onboardingStep === steps.length){
+          state.onboardingStep = 1; // Reset for next time
+          navigate('login');
+        } else {
+          state.onboardingStep++;
+          render();
+        }
+      });
+      if(document.getElementById('btnBack')){
+        document.getElementById('btnBack').addEventListener('click', ()=>{
+          state.onboardingStep--;
+          render();
+        });
+      }
+    }
+
+    /* ---------- LOGIN / Minimal Auth (local only) ---------- */
+    function renderLogin(){
+      contentArea.innerHTML = `
+        <div class="card" style="max-width:640px;margin:auto">
+          <div class="header">
+            <div>
+              <div class="page-title">Acesse sua conta</div>
+              <div class="small">Informe seu email e senha</div>
+            </div>
+            <div class="profile-pill">
+              <div class="avatar">CC</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:16px;align-items:center">
+            <div style="flex:1">
+              <div class="form-row">
+                <label>Email</label>
+                <input type="email" id="loginEmail" placeholder="seu@email.com" value="mariana@email.com">
+              </div>
+              <div class="form-row">
+                <label>Senha</label>
+                <input type="password" id="loginPwd" placeholder="Senha" value="123456">
+              </div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <button class="btn" id="btnLogin">Entrar</button>
+                <button class="btn ghost" id="btnToRegister">Criar Conta</button>
+              </div>
+            </div>
+            <div style="width:220px">
+              <div class="small muted">Benefícios</div>
+              <ul class="small muted">
+                <li>Planejamento rápido de viagens</li>
+                <li>Encontrar concurseiros no mesmo local</li>
+                <li>Mapas e dicas do local de prova</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      `;
+      document.getElementById('btnToRegister').addEventListener('click', ()=> navigate('register'));
+      document.getElementById('btnLogin').addEventListener('click', ()=>{
+        // Mock login: use existing user and show dashboard
+        MOCK_DATA.currentUser = MOCK_DATA.users.find(u=>u.id==="u1");
+        state.user = MOCK_DATA.currentUser;
+        navigate('dashboard');
+      });
+    }
+
+    function renderRegister(){
+      contentArea.innerHTML = `
+        <div class="card" style="max-width:640px;margin:auto">
+          <div class="header">
+            <div>
+              <div class="page-title">Crie sua conta</div>
+              <div class="small">Cadastro rápido — suas preferências ajudam nas recomendações</div>
+            </div>
+          </div>
+          <div>
+            <div class="form-row">
+              <label>Nome</label>
+              <input type="text" id="regName" placeholder="Seu nome completo">
+            </div>
+            <div class="form-row">
+              <label>Estado / Cidade</label>
+              <input type="text" id="regCity" placeholder="Ex: Belo Horizonte">
+            </div>
+            <div class="form-row">
+              <label>Email</label><input type="email" id="regEmail">
+            </div>
+            <div class="form-row">
+              <label>Senha</label><input type="password" id="regPwd">
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn" id="btnRegister">Criar Conta</button>
+              <button class="btn ghost" id="btnBackLogin">Voltar</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.getElementById('btnBackLogin').addEventListener('click', ()=> navigate('login'));
+      document.getElementById('btnRegister').addEventListener('click', ()=>{
+        // Minimal mock: assign user and go to dashboard
+        const name = document.getElementById('regName').value || "Novo Concurseiro";
+        const city = document.getElementById('regCity').value||"Indefinida";
+        MOCK_DATA.currentUser = {id:"u_new", name, city, avatarText:name.charAt(0).toUpperCase(), prefs:{hotel:false, carona:false, privacy:'private'}};
+        state.user = MOCK_DATA.currentUser;
+        state.trips = []; // New user has no trips
+        navigate('dashboard');
+      });
+    }
+
+    /* ---------- DASHBOARD ---------- */
+    function renderDashboard(){
+      const nextTrip = state.trips.find(t => new Date(t.depart) > new Date()) || state.trips.filter(t => t.contestId === 'c2')[0]; // Próxima viagem mock
+      const nextContest = nextTrip ? MOCK_DATA.contests.find(c=>c.id===nextTrip.contestId) : null;
+
+      contentArea.innerHTML = `
+        <div class="card">
+          <div class="header">
+            <div>
+              <div class="page-title">Olá, ${state.user.name}</div>
+              <div class="small">Próxima prova e viagens</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <div class="small muted">Cidade: ${state.user.city || '—'}</div>
+              <button class="btn" id="btnRegisterTripFromDash">Cadastrar Viagem</button>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div>
+              <div class="card" style="margin-bottom:12px">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div>
+                    <div style="font-weight:700">Próxima prova</div>
+                    ${renderNextContestCard(nextTrip, nextContest)}
+                  </div>
+                  <div style="text-align:right">
+                    <div class="small muted">Viagens ativas</div>
+                    <div style="font-weight:700">${state.trips.filter(t => new Date(t.depart) > new Date() && MOCK_DATA.contests.find(c=>c.id===t.contestId)?.result === 'Em planejamento').length}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                  <div style="font-weight:700">Feed Comunitário</div>
+                  <button class="btn small" onclick="navigate('community')">Ver tudo</button>
+                </div>
+                <div class="list" id="feedList">
+                  <div class="card small muted">Dica de hoje: "Chegue com 1 hora de antecedência no local da prova!"</div>
+                </div>
+              </div>
+            </div>
+
+            <aside>
+              <div class="card" style="margin-bottom:12px">
+                <div style="font-weight:700">Pessoas conectadas</div>
+                <div class="list" style="margin-top:8px">
+                  ${MOCK_DATA.users.filter(u => u.isFormalConnection).map(u=>`<div class="profile-pill"><div class="avatar">${u.avatarText}</div><div><div style="font-weight:700">${u.name}</div><div class="small muted">${u.city}</div></div></div>`).join('')}
+                </div>
+              </div>
+
+              <div class="card">
+                <div style="font-weight:700">Avaliações rápidas</div>
+                <div class="list" style="margin-top:8px">
+                  <div class="small muted">Hotel Central BSB: ⭐⭐⭐⭐ (Ótima localização)</div>
+                  <div class="small muted">Voo GIG->FOR (12/10): ⭐⭐⭐ (Atraso de 30min)</div>
+                </div>
+                <div style="margin-top:10px;text-align:right"><button class="btn small ghost" onclick="navigate('reviews')">Ver mais</button></div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      `;
+      document.getElementById('btnRegisterTripFromDash').addEventListener('click', ()=> navigate('register-trip'));
+    }
+
+    function renderNextContestCard(trip, contest){
+      if(trip && contest){
+        return `<div style="margin-top:6px">${contest.name}<div class="small muted">${contest.city} — ${fmtDate(contest.date)}</div></div><button class="btn small" style="margin-top:8px" onclick="navigate('trip', {tripId:'${trip.id}'})">Ver Detalhes</button>`;
+      } else {
+        return `<div style="margin-top:6px" class="small muted">Nenhuma viagem ativa. Cadastre sua próxima prova!</div>`;
+      }
+    }
+    
+    /* ---------- TRIPS LIST (NEW SCREEN) ---------- */
+    function renderTripsList(){
+      const activeTrips = state.trips.filter(t => new Date(t.depart) > new Date()).sort((a,b) => new Date(a.depart) - new Date(b.depart));
+      const pastTrips = state.trips.filter(t => new Date(t.depart) <= new Date()).sort((a,b) => new Date(b.depart) - new Date(a.depart));
+      
+      contentArea.innerHTML = `
+        <div class="card">
+          <div class="header">
+            <div>
+              <div class="page-title">Minhas Viagens Planejadas</div>
+              <div class="small">Resumo e detalhes de suas viagens de concurso</div>
+            </div>
+            <div><button class="btn" id="btnStartRegisterTrip">Cadastrar Nova Viagem</button></div>
+          </div>
+          
+          <div class="grid-2">
+            <div>
+              <div class="card" style="margin-bottom:12px">
+                <div style="font-weight:700;margin-bottom:8px">Viagens Ativas (${activeTrips.length})</div>
+                <div class="list">
+                  ${activeTrips.length ? activeTrips.map(t=>renderTripListItem(t)).join('') : `<div class="small muted">Nenhuma viagem ativa.</div>`}
+                </div>
+              </div>
+              <div class="card">
+                <div style="font-weight:700;margin-bottom:8px">Viagens Passadas (${pastTrips.length})</div>
+                <div class="list" style="max-height:200px;overflow-y:auto">
+                  ${pastTrips.length ? pastTrips.map(t=>renderTripListItem(t, true)).join('') : `<div class="small muted">Nenhuma viagem passada.</div>`}
+                </div>
+              </div>
+            </div>
+            
+            <aside>
+              <div class="card">
+                <div style="font-weight:700;margin-bottom:8px">Estatísticas Rápidas</div>
+                <div class="small muted list" style="gap:4px">
+                  <div>Provas cadastradas: ${MOCK_DATA.contests.length}</div>
+                  <div>Viagens com hotel em aberto: ${state.trips.filter(t=>t.hotel==='Em aberto').length}</div>
+                  <div>Conexões ativas: ${MOCK_DATA.users.filter(u=>u.isFormalConnection).length}</div>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      `;
+      document.getElementById('btnStartRegisterTrip').addEventListener('click', ()=> navigate('register-trip'));
+    }
+
+    function renderTripListItem(trip, isPast = false){
+        const contest = MOCK_DATA.contests.find(c=>c.id===trip.contestId) || {name:'Concurso', city:trip.to, date:''};
+        const status = isPast ? (contest.result === 'Aprovado' ? 'Aprovado' : 'Concluída') : 'Planejada';
+        const color = isPast ? (contest.result === 'Aprovado' ? '#059669' : '#9ca3af') : 'var(--primary)';
+
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid #eef2f7">
+            <div style="flex:1">
+                <div style="font-weight:700;color:${color}">${contest.name}</div>
+                <div class="small muted">${trip.to} • ${fmtDate(trip.depart)}</div>
+                <div class="small muted">Hotel: ${trip.hotel || 'Em aberto'}</div>
+            </div>
+            <div style="text-align:right">
+                <div class="small" style="font-weight:700;color:${color}">${status}</div>
+                <button class="btn small ghost" onclick="navigate('trip', {tripId:'${trip.id}'})">Ver</button>
+            </div>
+        </div>`;
+    }
+
+    /* ---------- REGISTER TRIP (Wizard simplified) ---------- */
+    function renderRegisterTrip(){
+      const steps = ['1. Concurso', '2. Logística', '3. Preferências', '4. Resumo'];
+      // Start at step 1 if no step is set
+      const currentStep = optsFromHash().step ? parseInt(optsFromHash().step) : 1; 
+      
+      const stepContent = {
+        1: renderTripStep1, 
+        2: renderTripStep2,
+        3: renderTripStep3,
+        4: renderTripStep4
+      }[currentStep] || renderTripStep1;
+
+      contentArea.innerHTML = `
+        <div class="card">
+          <div class="header">
+            <div>
+              <div class="page-title">Cadastrar Viagem</div>
+              <div class="small">Planejamento da prova</div>
+            </div>
+            <div><button class="btn ghost" onclick="navigate('trips-list')">Cancelar</button></div>
+          </div>
+
+          <div>
+            <div class="wizard-steps">
+              ${steps.map((s, i) => `<div class="step ${i + 1 == currentStep ? 'current' : ''}">${s}</div>`).join('')}
+            </div>
+            <div id="wizardContent" class="wizard-content">
+              ${stepContent()}
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Event listeners for wizard navigation
+      document.querySelectorAll('#wizardContent button[data-next], #wizardContent button[data-back]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const targetStep = parseInt(e.currentTarget.dataset.next || e.currentTarget.dataset.back);
+          pushHash({ step: targetStep });
+          render(); // Re-render the view for the new step
+        });
+      });
+
+      // Mock button listeners
+      if(currentStep === 1){
+        document.querySelectorAll('[data-sel]').forEach(btn=>{
+          btn.addEventListener('click', ()=> {
+            const c = MOCK_DATA.contests.find(x=>x.id===btn.dataset.sel);
+            document.getElementById('contestInput').value = c.name;
+          });
+        });
+      }
+      if(currentStep === 4){
+        document.getElementById('btnConfirmTrip').addEventListener('click', handleConfirmTrip);
+      }
+    }
+    
+    function renderTripStep1(){
+      const opts = optsFromHash();
+      const preContest = MOCK_DATA.contests.find(c=>c.id===opts.contestId) || null;
+      return `
+        <div>
+          <div class="form-row">
+            <label>Concurso (buscar/inserir)</label>
+            <input type="text" id="contestInput" placeholder="Ex: Polícia Federal" value="${preContest ? preContest.name : ''}">
+          </div>
+          <div class="form-row">
+            <label>Local da Prova (Cidade)</label>
+            <input type="text" id="cityInput" placeholder="Ex: São Paulo">
+          </div>
+          <div class="form-row">
+            <label>Data da Prova</label>
+            <input type="date" id="dateInput">
+          </div>
+          <div style="display:flex;gap:8px;margin-top:20px">
+            <button class="btn" data-next="2">Próximo</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderTripStep2(){
+      // Logística: Voo e Hotel (opcional)
+      return `
+        <div>
+          <div class="form-row">
+            <label>Detalhes do Voo (opcional)</label>
+            <input type="text" id="flightInput" placeholder="Ex: Voo LA3456 - GIG -> BSB (Deixe em branco se não reservou)">
+          </div>
+          <div class="form-row">
+            <label>Data/Hora de Partida</label>
+            <input type="datetime-local" id="dateDepart">
+          </div>
+          <div class="form-row">
+            <label>Detalhes do Hotel (opcional)</label>
+            <input type="text" id="hotelInput" placeholder="Ex: Hotel Central - Endereço completo (Deixe em branco se não reservou)">
+          </div>
+          <div class="form-row">
+            <label>Período de Hospedagem (noites)</label>
+            <input type="number" id="nightsInput" min="1" value="2">
+          </div>
+          <div style="display:flex;gap:8px;margin-top:20px">
+            <button class="btn ghost" data-back="1">Voltar</button>
+            <button class="btn" data-next="3">Próximo</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderTripStep3(){
+      // Preferências
+      return `
+        <div>
+          <div style="font-weight:700;margin-bottom:10px">Preferências de Conexão</div>
+          
+          <div class="checkbox-row">
+            <input type="checkbox" id="prefTransport" checked>
+            <label for="prefTransport">Estou apto(a) a dividir transporte/carona (Uber, táxi, etc.)</label>
+          </div>
+          
+          <div class="form-row">
+            <label>Companhia de Viagem</label>
+            <select id="prefCompany">
+              <option value="open">Busco companhia para a viagem</option>
+              <option value="private">Prefiro viajar e ficar sozinho(a)</option>
+            </select>
+          </div>
+
+          <div style="font-weight:700;margin-top:20px;margin-bottom:10px">Privacidade</div>
+          <div class="form-row">
+            <label>Exibição do seu registro</label>
+            <select id="prefPrivacy">
+              <option value="public">Aparecer nas buscas de outros concurseiros (Recomendado)</option>
+              <option value="private">Registro privado (aparece só no meu planejamento)</option>
+            </select>
+          </div>
+          
+          <div style="display:flex;gap:8px;margin-top:20px">
+            <button class="btn ghost" data-back="2">Voltar</button>
+            <button class="btn" data-next="4">Resumo</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderTripStep4(){
+      // Resumo
+      const mockData = {
+        contest: document.getElementById('contestInput')?.value || 'Concurso (não informado)',
+        city: document.getElementById('cityInput')?.value || 'Cidade (não informada)',
+        date: document.getElementById('dateInput')?.value ? fmtDate(document.getElementById('dateInput').value) : 'Data (não informada)',
+        flight: document.getElementById('flightInput')?.value || 'Nenhum voo cadastrado (Em aberto)',
+        hotel: document.getElementById('hotelInput')?.value || 'Nenhuma hospedagem cadastrada (Em aberto)',
+        transport: document.getElementById('prefTransport')?.checked ? 'Apto a dividir' : 'Não',
+        company: document.getElementById('prefCompany')?.value === 'open' ? 'Busca companhia' : 'Prefere viajar só',
+        privacy: document.getElementById('prefPrivacy')?.value === 'public' ? 'Público' : 'Privado'
+      };
+      
+      return `
+        <div>
+          <div style="font-weight:700" id="summaryTitle">${mockData.contest} — ${mockData.city}</div>
+          <div class="small muted" id="summaryContest">Prova em ${mockData.date}</div>
+
+          <div class="card" style="margin-top:12px">
+            <div style="font-weight:700;margin-bottom:8px">Detalhes da Viagem</div>
+            <div class="list small muted">
+              <div>Voo: ${mockData.flight}</div>
+              <div>Hospedagem: ${mockData.hotel}</div>
+            </div>
+            <div style="font-weight:700;margin-top:10px;margin-bottom:8px">Conexões & Privacidade</div>
+            <div class="list small muted">
+              <div>Divisão de Transporte: ${mockData.transport}</div>
+              <div>Companhia: ${mockData.company}</div>
+              <div>Exibição: ${mockData.privacy}</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:20px">
+            <button class="btn ghost" data-back="3">Voltar</button>
+            <button class="btn" id="btnConfirmTrip">Criar Viagem</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function handleConfirmTrip(){
+      // create mock trip
+      const contestName = document.getElementById('contestInput')?.value || 'Concurso Personalizado';
+      const city = document.getElementById('cityInput')?.value || 'Cidade';
+      
+      const contest = MOCK_DATA.contests.find(c=>c.name===contestName) || {id:'c_custom'+Date.now(), name:contestName, date: document.getElementById('dateInput')?.value, city: city, result:'Em planejamento'};
+      if(contest.id.startsWith('c_custom')) MOCK_DATA.contests.push(contest); // Add custom contest
+
+      const newTrip = {
+        id:'t'+(Date.now()),
+        contestId:contest.id,
+        userId:state.user.id,
+        from:state.user.city || '—',
+        to: city,
+        depart: document.getElementById('dateDepart')?.value || '',
+        arrive: document.getElementById('dateReturn')?.value || '', // Simplified: could be calculated
+        hotel: document.getElementById('hotelInput')?.value || 'Em aberto',
+        notes:'Planejamento inicial',
+        peopleGoing:[],
+        prefs: {
+            transport: document.getElementById('prefTransport')?.checked || false,
+            company: document.getElementById('prefCompany')?.value || 'private',
+            privacy: document.getElementById('prefPrivacy')?.value || 'private'
+        }
+      };
+      state.trips.unshift(newTrip);
+      pushHash({tripId:newTrip.id});
+      navigate('trip');
+    }
+    
+    /* ---------- TRIP DETAILS (Keep as is) ---------- */
+    function renderTripDetails(opts = {}){
+        const trip = state.trips.find(t=> t.id === opts.tripId);
+        if(!trip){
+            contentArea.innerHTML = `<div class="card"><div class="page-title">Nenhuma viagem selecionada</div></div>`;
+            return;
+        }
+        const contest = MOCK_DATA.contests.find(c=>c.id===trip.contestId) || {name:'Concurso', city:trip.to, venue:'—', date:''};
+
+        // Simplified itinerary for cleaner display
+        const itinerary = [
+            { title: "Partida", detail: `${trip.from} — ${fmtDateTime(trip.depart) || 'Em aberto'}`, dotClass: "" },
+            { title: "Chegada (Prevista)", detail: `${trip.to} — ${fmtDateTime(trip.arrive) || 'Em aberto'}`, dotClass: "" },
+            { title: "Local da Prova", detail: `${contest.venue || 'Aguardando local'}`, dotClass: "faint" },
+            { title: "Hospedagem", detail: `${trip.hotel || 'Em aberto'}`, dotClass: "faint" },
+        ];
+
+
+        contentArea.innerHTML = `
+            <div class="card">
+            <div class="header">
+                <div>
+                <div class="page-title">${contest.name}</div>
+                <div class="small muted">${contest.city} • ${fmtDate(contest.date)}</div>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center">
+                <button class="btn ghost" id="btnShare">Compartilhar</button>
+                <button class="btn" id="btnBackDash">Voltar</button>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div>
+                <div class="card" style="margin-bottom:12px">
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div style="font-weight:700">Itinerário & Logística</div>
+                    <div class="small muted">${trip.to}</div>
+                    </div>
+                    <div class="timeline" style="margin-top:8px">
+                    ${itinerary.map(i => `<div class="item"><div class="dot ${i.dotClass}"></div><div><div style="font-weight:700">${i.title}</div><div class="small muted">${i.detail}</div></div></div>`).join('')}
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div style="font-weight:700">Conexões Encontradas</div>
+                    <div class="small muted">${trip.peopleGoing.length} pessoas</div>
+                    </div>
+                    <div class="list" style="margin-top:8px">
+                    ${trip.peopleGoing.length ? trip.peopleGoing.map(uid=>renderUserMini(uid)).join('') : `<div class="small muted">Nenhuma conexão ativa.</div>`}
+                    </div>
+                    <div style="margin-top:10px">
+                    <button class="btn" onclick="navigate('connections')">Buscar Conexões</button>
+                    </div>
+                </div>
+                </div>
+
+                <aside>
+                <div class="card" style="margin-bottom:12px">
+                    <div style="font-weight:700">Mapa do local</div>
+                    <div class="map" style="margin-top:8px">[Mapa mock: ${contest.venue || contest.city}]</div>
+                </div>
+
+                <div class="card">
+                    <div style="font-weight:700">Preferências de Viagem</div>
+                    <div class="small muted" style="margin-top:8px">
+                        <div>Divisão de Transporte: ${trip.prefs.transport ? 'Apto a dividir' : 'Não'}</div>
+                        <div>Companhia: ${trip.prefs.company === 'open' ? 'Busca companhia' : 'Prefere viajar só'}</div>
+                        <div>Exibição na Busca: ${trip.prefs.privacy === 'public' ? 'Pública' : 'Privada'}</div>
+                    </div>
+                    <div style="margin-top:12px;text-align:right"><button class="btn small ghost" onclick="navigate('register-trip', {tripId: '${trip.id}', step: 3})">Editar Preferências</button></div>
+                </div>
+                </aside>
+            </div>
+            </div>
+        `;
+        document.getElementById('btnBackDash').addEventListener('click', ()=> navigate('trips-list')); // Volta para a lista de viagens
+        document.getElementById('btnShare').addEventListener('click', ()=> alert('Link de viagem copiado.'));
+    }
+
+    function renderUserMini(uid){
+        const u = MOCK_DATA.users.find(x=>x.id===uid) || {name:'Usuário', avatarText:'U', city:'—'};
+        return `<div style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:10px;background:#f8fbff">
+        <div class="avatar">${u.avatarText}</div>
+        <div style="flex:1">
+            <div style="font-weight:700">${u.name}</div>
+            <div class="small muted">${u.city}</div>
+        </div>
+        <div><button class="btn small" onclick="openChatWith('${u.id}')">Chat</button></div>
+        </div>`;
+    }
+
+    function openChatWith(uid){
+        pushHash({peerId:uid});
+        navigate('chat');
+    }
+
+    /* ---------- MAP (Keep as is) ---------- */
+    function renderMap(){
+      contentArea.innerHTML = `
+        <div class="card">
+          <div class="header">
+            <div>
+              <div class="page-title">Mapa de locais de prova</div>
+              <div class="small">Pesquise locais, hotéis e transporte próximo</div>
+            </div>
+            <div><input type="text" id="mapSearch" placeholder="Buscar cidade ou local" style="padding:8px;border-radius:8px;border:1px solid #e6eef8"></div>
+          </div>
+
+          <div style="display:flex;gap:12px">
+            <div style="flex:1">
+              <div class="map">[Mapa interativo — placeholder]</div>
+            </div>
+            <aside style="width:320px">
+              <div class="card">
+                <div style="font-weight:700">Locais de interesse</div>
+                <div class="list" style="margin-top:10px">
+                  ${MOCK_DATA.contests.slice(0, 3).map(c=>`<div style="padding:8px;border-bottom:1px dashed #f1f5f9"><div style="font-weight:700">${c.venue || 'Local Desconhecido'}</div><div class="small muted">${c.city} • ${fmtDate(c.date)}</div></div>`).join('')}
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      `;
+    }
+
+    /* ---------- CONNECTIONS (LIST) ---------- */
+    function renderConnections(){
+      const formalizedConnections = MOCK_DATA.users.filter(u => u.isFormalConnection && u.id !== state.user.id);
+      const otherUsers = MOCK_DATA.users.filter(u => !u.isFormalConnection && u.id !== state.user.id);
+      
+      contentArea.innerHTML = `
+        <div class="card">
+          <div class="header">
+            <div>
+              <div class="page-title">Conexões — Quem vai para o mesmo destino</div>
+              <div class="small">Conexões formalizadas e busca por novos parceiros</div>
+            </div>
+            <div><button class="btn ghost" onclick="navigate('dashboard')">Voltar</button></div>
+          </div>
+
+          <div class="grid-2">
+            <div>
+              <div class="card" style="margin-bottom:12px">
+                <div style="font-weight:700;margin-bottom:8px">Conexões Formalizadas (${formalizedConnections.length})</div>
+                <div class="list">
+                  ${formalizedConnections.length ? formalizedConnections.map(u=>renderConnectionItem(u)).join('') : `<div class="small muted">Nenhuma conexão formalizada ainda.</div>`}
+                </div>
+              </div>
+
+              <div class="card">
+                <div style="font-weight:700;margin-bottom:8px">Outros Concurseiros Próximos (${otherUsers.length})</div>
+                <div class="list" id="connectionsList">
+                  ${otherUsers.map(u=>renderConnectionItem(u)).join('')}
+                </div>
+              </div>
+            </div>
+            
+            <aside>
+              <div class="card">
+                <div style="font-weight:700">Buscar Novas Conexões</div>
+                <div style="margin-top:8px"><input type="text" id="filterInput" placeholder="Pesquisar nome ou cidade" style="padding:8px;border-radius:8px;border:1px solid #e6eef8"></div>
+
+                <div style="font-weight:700;margin-top:15px">Filtros</div>
+                <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+                  <label class="small"><input type="checkbox" id="filterSameCity"> Mesma cidade</label>
+                  <label class="small"><input type="checkbox" id="filterSameFlight"> Mesmo voo/ônibus (simulado)</label>
+                  <label class="small"><input type="checkbox" id="filterSameHotel"> Mesmo hotel/hospedagem</label>
+                  <label class="small"><input type="checkbox" id="filterAptTransport"> Apto a dividir transporte</label>
+                </div>
+                <div style="margin-top:15px"><button class="btn" id="applyFilters">Aplicar Filtros</button></div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      `;
+      document.getElementById('applyFilters').addEventListener('click', ()=> alert('Filtros aplicados (simulado).'));
+    }
+
+    function renderConnectionItem(u){
+      const isFormal = u.isFormalConnection ? 'Conexão formalizada' : 'Concurseiro próximo';
+      return `<div style="display:flex;align-items:center;gap:12px;padding:10px;border-bottom:1px dashed #f1f5f9">
+        <div class="avatar">${u.avatarText}</div>
+        <div style="flex:1">
+          <div style="font-weight:700">${u.name}</div>
+          <div class="small muted">${u.city} • ${isFormal}</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn small" onclick="openChatWith('${u.id}')">Chat</button>
+        </div>
+      </div>`;
+    }
+
+    /* ---------- CHAT (Keep as is) ---------- */
+    function renderChat(opts = {}){
+        const peerId = opts.peerId || optsFromHash().peerId;
+        if(!peerId){
+            contentArea.innerHTML = `<div class="card"><div class="page-title">Selecione alguém para conversar</div></div>`;
+            return;
+        }
+        const peer = MOCK_DATA.users.find(u=>u.id===peerId) || {id:peerId, name:'Usuário', avatarText:'U'};
+        const chatId = [state.user.id, peerId].sort().join('_');
+        state.chats[chatId] = state.chats[chatId] || [];
+
+        contentArea.innerHTML = `
+            <div class="card chat-shell">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid #eef2f7">
+                <div class="avatar">${peer.avatarText}</div>
+                <div style="flex:1">
+                <div style="font-weight:700">${peer.name}</div>
+                <div class="small muted">${peer.city || ''}</div>
+                </div>
+                <div><button class="btn ghost" id="btnBackFromChat" onclick="navigate('connections')">Voltar</button></div>
+            </div>
+
+            <div class="chat-list" id="chatList">
+                ${state.chats[chatId].map(m => renderMsg(m)).join('')}
+            </div>
+
+            <div class="chat-input">
+                <input type="text" id="chatInput" placeholder="Escreva uma mensagem..." style="flex:1;padding:10px;border-radius:10px;border:1px solid #eef2f7">
+                <button class="btn" id="btnSendMsg">Enviar</button>
+            </div>
+            </div>
+        `;
+        document.getElementById('btnSendMsg').addEventListener('click', ()=>{
+            const txt = document.getElementById('chatInput').value.trim();
+            if(!txt) return;
+            const m = {from: state.user.id, text: txt, at: new Date().toISOString()};
+            state.chats[chatId].push(m);
+            document.getElementById('chatInput').value = '';
+            document.getElementById('chatList').innerHTML = state.chats[chatId].map(renderMsg).join('');
+            const el = document.getElementById('chatList');
+            el.scrollTop = el.scrollHeight;
+        });
+        setTimeout(()=> {
+            const el = document.getElementById('chatList');
+            if(el) el.scrollTop = el.scrollHeight;
+        },50);
+    }
+
+    function renderMsg(m){
+        const cls = m.from === state.user.id ? 'me' : 'their';
+        const sender = m.from === state.user.id ? 'Você' : MOCK_DATA.users.find(u=>u.id===m.from)?.name.split(' ')[0] || 'Outro';
+        return `<div class="msg ${cls}"><div style="font-size:13px">${escapeHtml(m.text)}</div><div class="small muted" style="margin-top:6px;font-size:12px">${sender} • ${new Date(m.at).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}</div></div>`;
+    }
+
+    /* ---------- Community (MODIFIED) ---------- */
+    function renderCommunity(){
+      contentArea.innerHTML = `
+        <div class="card">
+          <div class="header">
+            <div>
+              <div class="page-title">Comunidade — Fórum</div>
+              <div class="small">Tire dúvidas, compartilhe dicas e relatos de viagem</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="text" id="topicSearch" placeholder="🔍 Buscar tópicos..." style="padding:8px;border-radius:10px;border:1px solid #e6eef8;width:240px">
+              <button class="btn" id="btnNewTopic">Novo tópico</button>
+            </div>
+          </div>
+
+          <div class="cards-grid">
+            <div class="card" style="grid-column: 1 / span 2">
+              <div style="font-weight:700;margin-bottom:8px">Tópicos recentes</div>
+              <div class="list">
+                <div class="card small muted">Onde deixar meu material no dia da prova TRF4? — 5 respostas</div>
+                <div class="card small muted">Dicas de hospedagem em SP — João • 12 curtidas</div>
+                <div class="card small muted">Como lidar com a ansiedade pré-prova? — 8 respostas</div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div style="font-weight:700;margin-bottom:8px">Categorias</div>
+              <div class="small muted list" style="gap:4px">
+                <div>Logística de Viagem</div>
+                <div>Estudo & Conteúdo</div>
+                <div>Motivação & Rotina</div>
+                <div>Relatos de Prova</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      document.getElementById('btnNewTopic').addEventListener('click', ()=> alert('Criar tópico (mock)'));
+    }
+
+    /* ---------- REVIEWS (NEW SCREEN) ---------- */
+    function renderReviews(){
+      contentArea.innerHTML = `
+        <div class="card">
+          <div class="header">
+            <div>
+              <div class="page-title">Avaliações dos Concurseiros</div>
+              <div class="small">Confira a experiência de outros candidatos com hotéis, voos e locais de prova</div>
+            </div>
+            <div><button class="btn" id="btnNewReview">Avaliar</button></div>
+          </div>
+
+          <div class="cards-grid">
+            <div class="card">
+              <div style="font-weight:700;margin-bottom:8px">Hotéis & Pousadas</div>
+              <div class="list small muted">
+                <div style="padding:4px 0">Hotel Central Brasília: ⭐⭐⭐⭐</div>
+                <div style="padding:4px 0">Pousada Boa Viagem BH: ⭐⭐⭐</div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div style="font-weight:700;margin-bottom:8px">Voos & Transportes</div>
+              <div class="list small muted">
+                <div style="padding:4px 0">Voo LA3456 (GIG->BSB): ⭐⭐⭐</div>
+                <div style="padding:4px 0">Rodoviária de SP (acesso): ⭐⭐⭐⭐</div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div style="font-weight:700;margin-bottom:8px">Locais de Prova</div>
+              <div class="list small muted">
+                <div style="padding:4px 0">Centro de Convenções BH: ⭐⭐⭐⭐⭐</div>
+                <div style="padding:4px 0">Universidade X (SP): ⭐⭐ (Ruim sinalização)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      document.getElementById('btnNewReview').addEventListener('click', ()=> alert('Funcionalidade de avaliação (mock).'));
+    }
+
+    /* ---------- HISTORY (NEW SCREEN) ---------- */
+    function renderHistory(){
+      const pastTrips = state.trips.filter(t => MOCK_DATA.contests.find(c=>c.id===t.contestId)?.result === 'Aprovado' || new Date(t.depart) < new Date());
+      
+      contentArea.innerHTML = `
+        <div class="card">
+          <div class="header">
+            <div>
+              <div class="page-title">Histórico de Provas</div>
+              <div class="small">Viagens e concursos já realizados — adicione notas e resultados</div>
+            </div>
+          </div>
+
+          <div class="list">
+            ${pastTrips.length ? pastTrips.map(t => {
+                const contest = MOCK_DATA.contests.find(c=>c.id===t.contestId) || {name:'Concurso', result:'Concluído'};
+                return `<div class="card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                        <div>
+                            <div style="font-weight:700">${contest.name}</div>
+                            <div class="small muted">${t.to} • ${fmtDate(t.depart)}</div>
+                        </div>
+                        <div class="small muted" style="text-align:right">
+                            <div style="font-weight:700;color:var(--primary)">${contest.result}</div>
+                            <button class="btn small ghost" onclick="alert('Editar nota (mock)')">Editar</button>
+                        </div>
+                    </div>
+                    <div class="small muted">Notas: ${t.notes}</div>
+                </div>`;
+            }).join('') : `<div class="card small muted">Nenhum histórico de provas encontrado.</div>`}
+          </div>
+        </div>
+      `;
+    }
+
+    /* ---------- PROFILE (Updated) ---------- */
+    function renderProfile(){
+      contentArea.innerHTML = `
+        <div class="card">
+          <div class="header">
+            <div>
+              <div class="page-title">Meu Perfil</div>
+              <div class="small">Edite seus dados e preferências de conexão</div>
+            </div>
+            <div><button class="btn" id="btnEditProfile">Sair</button></div>
+          </div>
+
+          <div class="grid-2">
+            <div>
+              <div class="card" style="margin-bottom:12px">
+                <div style="display:flex;gap:12px;align-items:center">
+                  <div class="avatar">${state.user.avatarText}</div>
+                  <div>
+                    <div style="font-weight:700">${state.user.name}</div>
+                    <div class="small muted">${state.user.city} | ${state.user.email || 'Email não cadastrado'}</div>
+                  </div>
+                </div>
+                <div style="margin-top:12px">
+                  <div class="small muted">Concursos Planejados</div>
+                  <ul>${MOCK_DATA.contests.filter(c => c.result === 'Em planejamento').map(c=>`<li>${c.name} • ${fmtDate(c.date)}</li>`).join('')}</ul>
+                </div>
+              </div>
+              
+              <div class="card">
+                <div style="font-weight:700">Preferências de Conexão</div>
+                <div style="margin-top:8px">
+                  <label class="checkbox-row small"><input type="checkbox" id="prefCarona" ${state.user.prefs.carona ? 'checked' : ''}> Apto a dividir transporte (Carona)</label>
+                  <label class="checkbox-row small"><input type="checkbox" id="prefHotel" ${state.user.prefs.hotel ? 'checked' : ''}> Aceita/Prefere dividir hospedagem</label>
+                  <div class="small muted" style="margin-top:8px">Exibição: ${state.user.prefs.privacy === 'public' ? 'Pública (Aparece na busca)' : 'Privada'}</div>
+                </div>
+                <div style="margin-top:10px"><button class="btn small" id="btnSavePrefs">Salvar Preferências</button></div>
+              </div>
+            </div>
+
+            <aside>
+                <div class="card" style="margin-bottom:12px">
+                    <div style="font-weight:700">Minhas Avaliações</div>
+                    <div class="list small muted" style="margin-top:8px">
+                        <div style="padding:4px 0">Hotel Central BSB: ⭐⭐⭐⭐</div>
+                        <div style="padding:4px 0">Local de Prova X: ⭐⭐⭐</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div style="font-weight:700">Atividade Recente</div>
+                    <div class="small muted list" style="margin-top:8px;gap:4px">
+                        <div>Último post no Fórum: "Dica de logística"</div>
+                        <div>Viagem cadastrada: Polícia Federal</div>
+                    </div>
+                </div>
+            </aside>
+          </div>
+        </div>
+      `;
+      document.getElementById('btnEditProfile').addEventListener('click', ()=> {
+        state.user = null;
+        navigate('login');
+      });
+      document.getElementById('btnSavePrefs').addEventListener('click', ()=> {
+        state.user.prefs.hotel = !!document.getElementById('prefHotel').checked;
+        state.user.prefs.carona = !!document.getElementById('prefCarona').checked;
+        alert('Preferências salvas (mock).');
+      });
+    }
+
+    /* ---------- UTIL ---------- */
+    function escapeHtml(s){ return s.replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m]); }
+
+    // Expose some functions to window for inline onclick usage
+    window.openChatWith = openChatWith;
+    window.navigate = navigate;
+
+    // initial render: check if user is logged in (mock)
+    (function init(){
+      if(!MOCK_DATA.currentUser){
+        state.route = 'onboarding';
+      } else {
+        MOCK_DATA.currentUser = MOCK_DATA.users.find(u=>u.id==="u1"); // Ensure mock user is set
+        state.user = MOCK_DATA.currentUser;
+        state.route = 'dashboard';
+      }
+      render();
+    })();
+  </script>
+</body>
+</html>
